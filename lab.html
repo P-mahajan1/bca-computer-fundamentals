@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyber Safety and IT Troubleshooting Lab | BCA | GC Chamba</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d2430;--card:#fff;--line:#d9d4c8;--acc:#1f5f5b;--ok:#2e7d32;--bad:#b3261e}
+@media (prefers-color-scheme:dark){:root{--bg:#161a1f;--fg:#e8e6e1;--card:#1f242b;--line:#3a414b;--acc:#6cc3bb;--ok:#7bd88f;--bad:#ff8a80}}
+body{margin:0;font:16px/1.5 system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+main{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:1.45rem;margin:.2em 0}.sub{color:var(--acc);font-weight:600;font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid var(--acc);background:var(--acc);color:#fff;cursor:pointer;margin:4px 6px 4px 0}
+button.alt{background:transparent;color:var(--acc)}
+.msg{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;font-size:.88rem;background:var(--bg);padding:10px;border-radius:6px;border:1px dashed var(--line)}
+.fb{margin-top:8px;font-size:.93rem}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);width:0}
+textarea{width:100%;box-sizing:border-box;min-height:80px;font:inherit;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px}
+</style></head><body><main>
+<div class="sub">GOVERNMENT COLLEGE CHAMBA &middot; BCA &middot; CO3 / CO4</div>
+<h1>Cyber Safety and IT Troubleshooting Lab</h1>
+<p>Two short practice rounds. Nothing you click here is stored or sent anywhere. Work alone first, then compare with a partner.</p>
+<div class="bar"><i id="prog"></i></div>
+<div id="app"></div>
+</main>
+<script>
+const phish=[
+{t:"SMS from 'HP-SCHOLR'\nYour post-matric scholarship will LAPSE today. Verify Aadhaar + OTP at http://hp-scholarship-verify.in.net/login immediately.",bad:true,why:"Urgency, a look-alike domain (.in.net), and a request for Aadhaar and OTP. Real portals never ask for an OTP over a link sent by SMS."},
+{t:"Email from principal.office@gcchamba-edu.xyz\nSubject: Salary revision list. Open the attached ZIP and enter your college login.",bad:true,why:"Unfamiliar domain, a ZIP attachment, and a login request. Check the sender address, not the display name."},
+{t:"Email from library@(your official college domain)\nBooks due on Friday. Renew at the library desk or from the link on the college website you already use.",bad:false,why:"Expected message, official domain, and it does not push you to a new link. Still, type the website address yourself."},
+{t:"WhatsApp from unknown number\nHi, I am from the university exam cell. Send your roll number and a photo of your ID card to get the hall ticket early.",bad:true,why:"Unknown sender asking for ID documents. Hall tickets come only through the official portal."},
+{t:"SMS from your bank (shortcode as usual)\nRs. 500 debited at an ATM. If this was not you, call the number printed on the back of your card.",bad:false,why:"Informational, no link, and it points you to a number you already own."},
+{t:"Email: 'Free AI tool - 1 year premium, only 50 seats'\nClick to claim. Sign in using your Google account.",bad:true,why:"Scarcity trick plus an OAuth sign-in. A fake sign-in page can capture your password or request wide account access."}];
+const tick=[
+{q:"Ticket 1: The college PC shows 'No internet' but the Wi-Fi icon is connected. What do you check FIRST?",o:["Reinstall Windows","Open another site / check if the router has a WAN light","Buy a new LAN cable","Change the monitor"],a:1,why:"Confirm the scope before changing anything: is it one site, one PC or the whole network?"},
+{q:"Ticket 2: A lab PC is very slow after a student plugged in a pen drive.",o:["Run a malware scan and check Task Manager for unknown processes","Delete the Windows folder","Format all other drives","Ignore it"],a:0,why:"Removable media is a common infection route. Scan, then look at what is consuming CPU or disk."},
+{q:"Ticket 3: A student forgot the password of the shared lab account and wants it written on the board.",o:["Write it on the board","Reset it and give the new one only to the authorised user","Remove the password completely","Share the admin password so it never happens again"],a:1,why:"Least privilege. Reset through the proper route and avoid displaying credentials."},
+{q:"Ticket 4: A document will not print, though other PCs print fine to the same printer.",o:["Check the print queue and selected printer on that PC","Replace the printer","Reformat the PC","Update the BIOS"],a:0,why:"If others print, the printer is probably fine. Look at what is different on this PC first."},
+{q:"Ticket 5: An AI assistant gave you a Section number from the IT Act with a confident explanation. What next?",o:["Paste it in the assignment","Check it against the official India Code / government text before using it","Ask the AI again until it agrees with itself","Delete the assignment"],a:1,why:"AI output can be fluent and wrong. Verify against an authoritative source."}];
+const app=document.getElementById('app'),prog=document.getElementById('prog');
+let score=0,total=phish.length+tick.length,done=0;
+function bump(){prog.style.width=(100*done/total)+'%'}
+function phishRound(){
+ let h='<h2>Round 1: Is it safe?</h2>';
+ phish.forEach((p,i)=>{h+=`<div class="card"><div class="msg">${p.t.replace(/</g,'&lt;')}</div>
+ <button onclick="pa(${i},true)">Suspicious</button><button class="alt" onclick="pa(${i},false)">Looks genuine</button><div class="fb" id="p${i}"></div></div>`});
+ h+='<button onclick="tickRound()">Next: Troubleshooting desk</button>';app.innerHTML=h}
+const answered={};
+function pa(i,g){if(answered['p'+i])return;answered['p'+i]=1;done++;const ok=(g===phish[i].bad);if(ok)score++;
+ document.getElementById('p'+i).innerHTML=`<span class="${ok?'ok':'bad'}">${ok?'Correct.':'Not quite.'}</span> ${phish[i].why}`;bump()}
+function tickRound(){let h='<h2>Round 2: Troubleshooting desk</h2>';
+ tick.forEach((t,i)=>{h+=`<div class="card"><b>${t.q}</b><br>`+t.o.map((x,j)=>`<button class="alt" onclick="ta(${i},${j})">${x}</button>`).join('')+`<div class="fb" id="t${i}"></div></div>`});
+ h+='<button onclick="finish()">See result</button>';app.innerHTML=h}
+function ta(i,j){if(answered['t'+i])return;answered['t'+i]=1;done++;const ok=j===tick[i].a;if(ok)score++;
+ document.getElementById('t'+i).innerHTML=`<span class="${ok?'ok':'bad'}">${ok?'Good call.':'Think again.'}</span> ${tick[i].why}`;bump()}
+function finish(){const pct=Math.round(100*score/total);
+ const note=pct>=80?"Strong. Now explain one answer to a classmate in your own words.":pct>=60?"Reasonable. Revisit the items you missed.":"Revise Week 8 and Week 12 notes, then try again.";
+ app.innerHTML=`<h2>Result: ${score} / ${total} (${pct}%)</h2><p>${note}</p>
+ <div class="card"><b>Reflection (3 lines)</b><p>Which message nearly fooled you, and what was the clue you missed?</p><textarea id="r"></textarea>
+ <button onclick="mk()">Make an AI-check prompt</button><div class="msg" id="out" style="display:none"></div></div>
+ <button class="alt" onclick="location.reload()">Try again</button>`}
+function mk(){const o=document.getElementById('out');o.style.display='block';
+ o.textContent="I am a first-year BCA student. Here is my reflection on a phishing exercise:\n\n"+document.getElementById('r').value+
+ "\n\nPoint out anything I got wrong, ask me two questions to test my understanding, and do not give me a final answer to copy. I will verify any facts against CERT-In or official sources.";}
+phishRound();
+</script></body></html>
